@@ -1,0 +1,40 @@
+The mongodb atlas connection is cluster login1, database test, table QRcoderedirect1
+
+This is the format of each pregenerated unassigned route in the table. You can also add routes easily by going to the secret route in admin.js
+
+
+{
+  "_id": {
+    "$oid": "6a41e908589a052aac59351c"
+  },
+  "route": "review-Xq7mR2",
+  "product_type": "SquareAcrylicSign",
+  "company_name": "QR Code Sign",
+  "hardcoded_url": "https://hydrosweepservices.com/review-Xq7mR2",
+  "destination_url": "https://google.com",
+  "redirect_delay_seconds": 10,
+  "display_message": "Thanks for scanning. Auto redirecting to Google review..",
+  "page_title": "We appreciate your feedback!",
+  "active": true,
+  "ownerId": null,
+  "canEdit": true,
+  "__v": 0
+}
+
+{
+  "_id": {
+    "$oid": "6a41f054589a052aac5935c3"
+  },
+  "route": "review-Bt9vW6",
+  "product_type": "SquareAcrylicSign",
+  "company_name": "QR Code Sign",
+  "hardcoded_url": "https://hydrosweepservices.com/review-Bt9vW6",
+  "destination_url": "https://google.com",
+  "redirect_delay_seconds": 5,
+  "display_message": "Thanks for scanning. Auto redirecting to Google reviews…",
+  "page_title": "We appreciate your feedback!",
+  "active": true,
+  "ownerId": null,
+  "canEdit": true,
+  "__v": 0
+}

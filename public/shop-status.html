@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Status | ACME</title>
+    <link rel="stylesheet" href="/shop-style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.clouds.min.js"></script>
+    <style>
+        #status-page {
+            position: fixed; inset: 0; display: flex;
+            justify-content: center; align-items: center;
+            z-index: 10; padding: 20px; box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        /* ── Card ── */
+        .status-card {
+            background: rgba(0,0,0,0.88);
+            border: 1px solid #333;
+            border-radius: 20px;
+            padding: 40px 36px;
+            max-width: 560px;
+            width: 100%;
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        /* ── Loading ── */
+        .loading-spinner {
+            width: 40px; height: 40px; border: 2px solid #333;
+            border-top-color: #fff; border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin: 0 auto 20px;
+        }
+        @keyframes spin   { to   { transform: rotate(360deg); } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); }
+                            to   { opacity: 1; transform: translateY(0); } }
+
+        /* ── Success header ── */
+        .receipt-check {
+            width: 56px; height: 56px; border-radius: 50%;
+            background: rgba(255,255,255,0.08); border: 1px solid #555;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; margin: 0 auto 20px;
+        }
+        .receipt-title {
+            font-size: 1.6rem; font-weight: 900;
+            letter-spacing: -0.5px; margin: 0 0 8px; text-align: center;
+        }
+        .receipt-subtitle {
+            color: #888; font-size: 0.82rem; line-height: 1.6;
+            margin: 0 0 28px; text-align: center;
+        }
+        .receipt-subtitle strong { color: #fff; }
+
+        /* ── Divider ── */
+        .receipt-divider {
+            border: none; border-top: 1px solid #2a2a2a; margin: 20px 0;
+        }
+
+        /* ── Section heading ── */
+        .receipt-section-label {
+            font-size: 0.6rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 2px; color: #555; margin: 0 0 14px;
+        }
+
+        /* ── Line item row ── */
+        .receipt-item {
+            display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px;
+        }
+        .receipt-item-img {
+            width: 48px; height: 48px; border-radius: 8px; object-fit: cover;
+            border: 1px solid #333; flex-shrink: 0; background: #111;
+        }
+        .receipt-item-img-placeholder {
+            width: 48px; height: 48px; border-radius: 8px;
+            background: #1a1a1a; border: 1px solid #333; flex-shrink: 0;
+        }
+        .receipt-item-body { flex: 1; min-width: 0; }
+        .receipt-item-name {
+            font-size: 0.82rem; font-weight: 700;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            margin-bottom: 3px;
+        }
+        .receipt-item-desc { font-size: 0.72rem; color: #666; margin-bottom: 3px; }
+        .receipt-item-qty  { font-size: 0.68rem; color: #555; }
+        .receipt-item-price {
+            font-size: 0.82rem; font-weight: 700; flex-shrink: 0;
+            padding-top: 2px;
+        }
+
+        /* ── Totals table ── */
+        .receipt-totals { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .receipt-totals td { padding: 5px 0; color: #888; }
+        .receipt-totals td:last-child { text-align: right; color: #ccc; }
+        .receipt-totals .total-row td {
+            color: #fff; font-weight: 900; font-size: 0.88rem;
+            padding-top: 12px; border-top: 1px solid #2a2a2a;
+        }
+
+        /* ── Reference block ── */
+        .receipt-ref-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+        }
+        .receipt-ref-item {}
+        .receipt-ref-label {
+            font-size: 0.6rem; color: #555; text-transform: uppercase;
+            letter-spacing: 1px; display: block; margin-bottom: 4px;
+        }
+        .receipt-ref-value {
+            font-size: 0.72rem; color: #bbb; word-break: break-all;
+        }
+        .receipt-ref-full { grid-column: 1 / -1; }
+
+        /* ── Buttons ── */
+        .receipt-btn-row {
+            display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap;
+        }
+        .receipt-btn {
+            flex: 1; min-width: 120px;
+            background: #fff; color: #000; border: none;
+            padding: 13px 20px; border-radius: 30px;
+            font-weight: 900; font-size: 0.78rem; text-transform: uppercase;
+            cursor: pointer; transition: 0.25s; text-decoration: none;
+            display: inline-flex; align-items: center; justify-content: center;
+            text-align: center;
+        }
+        .receipt-btn:hover { background: #eee; transform: scale(1.02); }
+        .receipt-btn.outline {
+            background: transparent; color: #fff;
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+        .receipt-btn.outline:hover { background: rgba(255,255,255,0.08); }
+
+        /* ── Non-success cards ── */
+        .status-simple {
+            text-align: center;
+        }
+        .status-icon   { font-size: 3rem; margin-bottom: 18px; display: block; }
+        .status-title  { font-size: 1.6rem; font-weight: 900; letter-spacing: -1px; margin: 0 0 12px; }
+        .status-sub    { color: #888; font-size: 0.84rem; line-height: 1.6; margin-bottom: 28px; }
+        .status-btn    {
+            background: #fff; color: #000; border: none;
+            padding: 14px 32px; border-radius: 30px;
+            font-weight: 900; font-size: 0.8rem; text-transform: uppercase;
+            cursor: pointer; transition: 0.3s; text-decoration: none; display: inline-block;
+        }
+        .status-btn:hover { background: #eee; transform: scale(1.02); }
+
+        @media (max-width: 480px) {
+            .status-card { padding: 28px 20px; }
+            .receipt-ref-grid { grid-template-columns: 1fr; }
+            .receipt-ref-full { grid-column: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <div id="status-page">
+
+        <!-- Loading -->
+        <div id="state-loading" class="status-card" style="text-align:center;">
+            <div class="loading-spinner"></div>
+            <p style="color:#888; font-size:0.85rem; margin:0;">Verifying your order...</p>
+        </div>
+
+        <!-- Success receipt — populated dynamically by JS -->
+        <div id="state-success" class="status-card" style="display:none;">
+
+            <div class="receipt-check">✓</div>
+            <h1 class="receipt-title">Payment Successful</h1>
+            <p class="receipt-subtitle">
+                Thank you for your purchase.<br>
+                A confirmation email has been sent to <strong id="receipt-email"></strong>.<br>
+                Your order is currently being processed and prepared for shipment.
+            </p>
+
+            <hr class="receipt-divider">
+
+            <p class="receipt-section-label">Order Details</p>
+            <div id="receipt-items"></div>
+
+            <hr class="receipt-divider">
+
+            <table class="receipt-totals">
+                <tbody>
+                    <tr>
+                        <td>Subtotal</td>
+                        <td id="receipt-subtotal"></td>
+                    </tr>
+                    <tr>
+                        <td>Shipping</td>
+                        <td>Free</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td>Total Paid</td>
+                        <td id="receipt-total"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <hr class="receipt-divider">
+
+            <p class="receipt-section-label">Reference Information</p>
+            <div class="receipt-ref-grid">
+                <div class="receipt-ref-item receipt-ref-full">
+                    <span class="receipt-ref-label">Order Number</span>
+                    <span class="receipt-ref-value" id="receipt-order-num"></span>
+                </div>
+                <div class="receipt-ref-item">
+                    <span class="receipt-ref-label">Transaction Date</span>
+                    <span class="receipt-ref-value" id="receipt-date"></span>
+                </div>
+                <div class="receipt-ref-item">
+                    <span class="receipt-ref-label">Payment Status</span>
+                    <span class="receipt-ref-value" style="color:#4caf76;">Confirmed</span>
+                </div>
+            </div>
+
+            <div class="receipt-btn-row">
+                <a href="/shop/collections" class="receipt-btn">Continue Shopping</a>
+                <button onclick="downloadReceipt()" class="receipt-btn outline">Download Receipt</button>
+            </div>
+
+        </div>
+
+        <!-- Cancelled -->
+        <div id="state-cancelled" class="status-card status-simple" style="display:none;">
+            <span class="status-icon" style="color:#888;">✕</span>
+            <h1 class="status-title">Payment Cancelled</h1>
+            <p class="status-sub">No charge was made. Your cart is saved — head back whenever you're ready.</p>
+            <a href="/shop/collections" class="status-btn">Back to Shop</a>
+        </div>
+
+        <!-- Failed -->
+        <div id="state-failed" class="status-card status-simple" style="display:none;">
+            <span class="status-icon" style="color:#e55;">✕</span>
+            <h1 class="status-title">Payment Declined</h1>
+            <p class="status-sub">Something went wrong processing your payment. No charge was made. Please try again or use a different card.</p>
+            <a href="/shop/collections" class="status-btn">Try Again</a>
+        </div>
+
+    </div>
+
+    <script>
+        // ── Vanta ─────────────────────────────────────────────────────────────
+        VANTA.CLOUDS({
+            el: '#canvas-container',
+            mouseControls: false, touchControls: false,
+            backgroundColor: 0x0, skyColor: 0x111b24,
+            cloudColor: 0x3a4a5e, speed: 0.8,
+        });
+
+        // ── Helpers ───────────────────────────────────────────────────────────
+        function showState(id) {
+            ['state-loading', 'state-success', 'state-cancelled', 'state-failed']
+                .forEach(function (s) {
+                    document.getElementById(s).style.display = (s === id) ? 'block' : 'none';
+                });
+        }
+
+        function formatMoney(cents) {
+            return '$' + (cents / 100).toFixed(2);
+        }
+
+        function formatDate(isoString) {
+            try {
+                return new Date(isoString).toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                });
+            } catch (e) {
+                return isoString;
+            }
+        }
+
+        function escapeHTML(str) {
+            if (typeof str !== 'string') return '';
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                      .replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+        }
+
+        // ── Populate success receipt ───────────────────────────────────────────
+        function populateReceipt(data, sessionId) {
+            // Header
+            document.getElementById('receipt-email').textContent =
+                data.customerEmail || 'your email address';
+
+            // Line items
+            var itemsHTML = (data.lineItems || []).map(function (item) {
+                var imgTag = item.imageUrl
+                    ? '<img class="receipt-item-img" src="' + escapeHTML(item.imageUrl) + '" alt="' + escapeHTML(item.name) + '">'
+                    : '<div class="receipt-item-img-placeholder"></div>';
+
+                var desc = item.description ? '<div class="receipt-item-desc">' + escapeHTML(item.description) + '</div>' : '';
+                var qty  = item.quantity > 1 ? '<div class="receipt-item-qty">Qty: ' + item.quantity + '</div>' : '';
+
+                return '<div class="receipt-item">'
+                    + imgTag
+                    + '<div class="receipt-item-body">'
+                    +   '<div class="receipt-item-name">' + escapeHTML(item.name) + '</div>'
+                    +   desc + qty
+                    + '</div>'
+                    + '<div class="receipt-item-price">' + formatMoney(item.totalAmount) + '</div>'
+                    + '</div>';
+            }).join('');
+
+            document.getElementById('receipt-items').innerHTML =
+                itemsHTML || '<p style="color:#666; font-size:0.8rem;">No item details available.</p>';
+
+            // Totals
+            document.getElementById('receipt-subtotal').textContent = formatMoney(data.amountTotal);
+            document.getElementById('receipt-total').textContent    = formatMoney(data.amountTotal);
+
+            // Reference
+            document.getElementById('receipt-order-num').textContent = sessionId;
+            document.getElementById('receipt-date').textContent =
+                data.transactionDate ? formatDate(data.transactionDate) : '—';
+
+            showState('state-success');
+        }
+
+        // ── Download receipt as plain-text file ────────────────────────────────
+        // Generates a .txt receipt the customer can save to their device.
+        // This approach requires no server-side PDF library.
+        function downloadReceipt() {
+            var email   = document.getElementById('receipt-email').textContent;
+            var total   = document.getElementById('receipt-total').textContent;
+            var orderNo = document.getElementById('receipt-order-num').textContent;
+            var date    = document.getElementById('receipt-date').textContent;
+
+            var itemLines = '';
+            document.querySelectorAll('.receipt-item').forEach(function (row) {
+                var name  = (row.querySelector('.receipt-item-name')  || {}).textContent || '';
+                var desc  = (row.querySelector('.receipt-item-desc')  || {}).textContent || '';
+                var price = (row.querySelector('.receipt-item-price') || {}).textContent || '';
+                itemLines += 'Item:        ' + name + '\n';
+                if (desc) itemLines += 'Description: ' + desc + '\n';
+                itemLines += 'Price:       ' + price + '\n\n';
+            });
+
+            var text = [
+                '===========================================',
+                '          ACME STORE — ORDER RECEIPT',
+                '===========================================',
+                '',
+                'Payment Successful',
+                'A confirmation email was sent to: ' + email,
+                '',
+                '-------------------------------------------',
+                'ORDER DETAILS',
+                '-------------------------------------------',
+                itemLines.trim(),
+                '',
+                '-------------------------------------------',
+                'Subtotal:   ' + total,
+                'Shipping:   Free',
+                'TOTAL PAID: ' + total,
+                '-------------------------------------------',
+                '',
+                'REFERENCE INFORMATION',
+                'Order Number:     ' + orderNo,
+                'Transaction Date: ' + date,
+                '',
+                '===========================================',
+                'Thank you for shopping with ACME.',
+                '===========================================',
+            ].join('\n');
+
+            var blob = new Blob([text], { type: 'text/plain' });
+            var url  = URL.createObjectURL(blob);
+            var a    = document.createElement('a');
+            a.href     = url;
+            a.download = 'ACME-Receipt-' + orderNo.slice(-8) + '.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ── URL params ────────────────────────────────────────────────────────
+        var params    = new URLSearchParams(window.location.search);
+        var urlStatus = params.get('status');
+        var sessionId = params.get('session_id');
+
+        async function verifyPayment() {
+            // Cancel branch
+            if (urlStatus === 'cancel' || !sessionId) {
+                showState('state-cancelled');
+                return;
+            }
+
+            // Success branch — always verify server-side
+            if (urlStatus === 'success' && sessionId) {
+                try {
+                    var res  = await fetch('/api/verify-session?session_id=' + encodeURIComponent(sessionId));
+                    var data = await res.json();
+
+                    if (data.status === 'paid') {
+                        populateReceipt(data, sessionId);
+
+                    } else if (data.status === 'dev') {
+                        // Dev mode stub
+                        populateReceipt({
+                            customerEmail:   'dev@example.com',
+                            amountTotal:     5000,
+                            transactionDate: new Date().toISOString(),
+                            lineItems: [{
+                                name:        'Dev Product',
+                                description: 'Size: M | Color: Black',
+                                imageUrl:    null,
+                                quantity:    1,
+                                unitAmount:  5000,
+                                totalAmount: 5000,
+                            }],
+                        }, sessionId);
+
+                    } else {
+                        showState('state-failed');
+                    }
+                } catch (err) {
+                    console.error('Status verification error:', err);
+                    showState('state-failed');
+                }
+                return;
+            }
+
+            showState('state-cancelled');
+        }
+
+        verifyPayment();
+    </script>
+</body>
+</html>

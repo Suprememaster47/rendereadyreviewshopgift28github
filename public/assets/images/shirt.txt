@@ -1,0 +1,25 @@
+{
+  "_id": {
+    "$oid": "69daa0d2602cdd03a9098da4"
+  },
+  "title": "Acme Circles T-Shirt",
+  "slug": "acme-circles-t-shirt",
+  "priceUSD": 20,
+  "sizes": [
+    "S",
+    "M",
+    "L"
+  ],
+  "colors": [
+    "Black",
+    "White"
+  ],
+  "images": [
+    "/public/assets/images/tshirt-front.png",
+    "/public/assets/images/tshirt-back.png",
+    "/public/assets/images/tshirt-detail.png",
+    "/public/assets/images/tshirt-lifestyle.png"
+  ],
+  "inStock": true,
+  "category": "Shirts"
+}

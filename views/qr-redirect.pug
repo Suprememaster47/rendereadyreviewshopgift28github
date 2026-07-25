@@ -1,0 +1,24 @@
+extends ../layout
+
+block head
+  //- Meta refresh — fires after the configured delay
+  meta(http-equiv="refresh" content=`${redirect_delay_seconds};url=${destination_url}`)
+
+block content
+  .container.mt-5
+    .row.justify-content-center
+      .col-md-6.text-center
+        .card.shadow-sm
+          .card-body.py-5
+            .spinner-border.text-primary.mb-4(role="status")
+              span.visually-hidden Loading...
+            h4.card-title= title
+            p.card-text.text-muted= display_message
+            a.btn.btn-outline-secondary.mt-3(href=destination_url) Click here if you are not redirected
+
+block scripts
+  script.
+    // JS fallback — fires even if meta-refresh is blocked by the browser
+    setTimeout(function () {
+      window.location.href = '!{destination_url}';
+    }, !{redirect_delay_seconds} * 1000);

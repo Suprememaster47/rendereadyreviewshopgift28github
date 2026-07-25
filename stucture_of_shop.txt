@@ -1,0 +1,17 @@
+
+this is my file structure.
+
+your-project/
+├── server.js
+├── db.js        
+├── package.json           
+├── .env                  
+├── models/
+│   ├── Product.js       
+│   └── Mapping.js        
+└── public/
+    ├── shop.html
+    ├── shop-script.js
+    ├── shop-style.css     
+    ├── shop-status.html     
+    └── 404.html

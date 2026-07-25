@@ -1,0 +1,455 @@
+extends ../layout
+
+block content
+  if assignedRoutes && assignedRoutes.length
+    .pb-2.mt-2.mb-2.border-bottom.d-flex.justify-content-between.align-items-center
+      h3 QR Code Redirect Links
+      a.btn.btn-outline-primary.btn-sm(href='/gift') 🎁 Gift a Route
+
+    each item in assignedRoutes
+      .card.mb-4.shadow-sm
+        .card-header.d-flex.justify-content-between.align-items-center
+          strong= item.company_name || 'QR Redirect'
+          span.badge.bg-primary.ms-2
+            | #{item.viewCount} unique scan#{item.viewCount === 1 ? '' : 's'}
+
+        .card-body
+          .mb-3
+            label.form-label Assigned Route (Locked)
+            .route-link-row
+              input.form-control.route-url-input(
+                type='text'
+                value=item.hardcoded_url
+                disabled
+                id=`route-url-${item.route}`
+              )
+              button.route-action-btn.copy-route-btn(
+                type='button'
+                data-route-url=item.hardcoded_url
+                title='Copy link'
+              )
+                svg.route-action-icon(viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg')
+                  rect(x='8' y='8' width='12' height='12' rx='2' stroke='currentColor' stroke-width='2')
+                  path(d='M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round')
+                span.route-action-label Copy
+              a.route-action-btn(
+                href=item.hardcoded_url
+                target='_blank'
+                rel='noopener noreferrer'
+                title='Open in new tab'
+              )
+                svg.route-action-icon(viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg')
+                  path(d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round')
+                  path(d='M15 3h6v6' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round')
+                  path(d='M10 14L21 3' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round')
+                span.route-action-label Open
+            small.text-muted.copy-status-msg(data-route=item.route)
+
+          .mb-3
+            label.form-label Target Destination URL
+            input.form-control(
+              type='url'
+              name='destination_url'
+              value=item.destination_url
+            )
+
+          .mb-3
+            label.form-label Interim Page Title
+            input.form-control(
+              type='text'
+              name='page_title'
+              value=item.page_title || ''
+            )
+
+          .mb-3
+            label.form-label Interim Display Message
+            input.form-control(
+              type='text'
+              name='display_message'
+              value=item.display_message || ''
+            )
+
+          .mb-3
+            label.form-label Delay (Seconds)
+            input.form-control(
+              type='number'
+              name='redirect_delay_seconds'
+              min='0'
+              max='15'
+              value=item.redirect_delay_seconds
+            )
+
+        .card-footer.d-flex.align-items-center
+          if item.canEdit === false
+            button.btn.btn-secondary(type='button' disabled) Editing Locked by Admin
+          else
+            button.btn.btn-primary.save-qr-btn(
+              type='button'
+              data-route=item.route
+            ) Save Settings
+            span.ms-2.status-msg
+
+  .pb-2.mt-2.mb-4.border-bottom
+    h3 Profile Information
+
+  form(action='/account/profile', method='POST')
+    input(type='hidden', name='_csrf', value=_csrf)
+    .form-group.row
+      label.col-md-3.col-form-label.font-weight-bold.text-right(for='email') Email
+      .col-md-7
+        input#email.form-control(type='email', name='email', value=user.email, autocomplete='email', required)
+      .offset-sm-3.col-md-7.pl-3.mb-2
+        if user.emailVerified
+          .text-success.font-italic
+            | Verified
+        else
+          .text-danger.font-italic
+            | Unverified: &nbsp;
+            a(href='/account/verify') Send verification email
+    .form-group.row
+      label.col-md-3.col-form-label.font-weight-bold.text-right(for='name') Name
+      .col-md-7.mt-2
+        input#name.form-control(type='text', name='name', value=user.profile.name, autocomplete='name')
+    .form-group.row
+      label.col-md-3.col-form-label.font-weight-bold.text-right Gender
+      .col-sm-6.mt-2
+        .form-check.form-check-inline
+          input.form-check-input(type='radio', checked=user.profile.gender == 'male', name='gender', value='male', data-toggle='radio')
+          label.form-check-label Male
+
+        .form-check.form-check-inline
+          input.form-check-input(type='radio', checked=user.profile.gender == 'female', name='gender', value='female', data-toggle='radio')
+          label.form-check-label Female
+
+        .form-check.form-check-inline
+          input.form-check-input(type='radio', checked=user.profile.gender == 'other', name='gender', value='other', data-toggle='radio')
+          label.form-check-label Other
+    .form-group.row
+      label.col-md-3.col-form-label.font-weight-bold.text-right(for='location') Location
+      .col-md-7.mb-2
+        input#location.form-control(type='text', name='location', value=user.profile.location, autocomplete)
+    .form-group.row
+      label.col-md-3.col-form-label.font-weight-bold.text-right(for='website') Website
+      .col-md-7.mb-2
+        input#website.form-control(type='text', name='website', value=user.profile.website, autocomplete='url')
+    .form-group.row
+      label.col-md-3.col-form-label.font-weight-bold.text-right Profile Picture
+      .col-sm-4.mb-2
+        img.profile(src=user.profile.picture ? user.profile.picture : user.gravatar(), width='100', height='100')
+    .form-group
+      .offset-sm-3.col-md-7.pl-2
+        button.btn.btn.btn-primary(type='submit')
+          i.fas.fa-pencil-alt.fa-sm.me-2
+          | Update Profile
+
+  .pb-2.mt-2.mb-4.border-bottom
+    h3 Change Password
+
+  form(action='/account/password', method='POST')
+    input(type='hidden', name='_csrf', value=_csrf)
+    .form-group.row
+      label.col-md-3.col-form-label.font-weight-bold.text-right(for='password') New Password
+      .col-md-7.mb-2
+        input#password.form-control(type='password', name='password', autocomplete='new-password', minlength='8', required)
+    .form-group.row
+      label.col-md-3.col-form-label.font-weight-bold.text-right(for='confirmPassword') Confirm Password
+      .col-md-7.mb-2
+        input#confirmPassword.form-control(type='password', name='confirmPassword', autocomplete='new-password', minlength='8', required)
+    .form-group
+      .offset-sm-3.col-md-7.pl-2
+        button.btn.btn-primary(type='submit')
+          i.fas.fa-lock.fa-sm.me-2
+          | Change Password
+
+  .pb-2.mt-2.mb-4.border-bottom
+    h3 Logout Everywhere
+
+  form(action='/account/logout-everywhere', method='POST')
+    input(type='hidden', name='_csrf', value=_csrf)
+    .form-group
+      p.offset-sm-3.col-md-7.pl-2 This will log you out of all devices and locations.
+      .offset-sm-3.col-md-7.pl-2
+        button.btn.btn-danger(type='submit')
+          i.fas.fa-sm.me-2.fa-sign-out-alt
+          | Logout everywhere
+
+  .pb-2.mt-2.mb-4.border-bottom
+    h3 Delete Account
+
+  form(action='/account/delete', method='POST', onsubmit='return confirm(\'Are you sure you want to delete your account?\');')
+    .form-group
+      p.offset-sm-3.col-md-7.pl-2 You can delete your account, but keep in mind this action is irreversible.
+      input(type='hidden', name='_csrf', value=_csrf)
+      .offset-sm-3.col-md-7.pl-2
+        button.btn.btn-danger(type='submit')
+          i.fas.fa-trash-alt.fa-sm.me-2
+          | Delete my account
+
+  .pb-2.mt-2.mb-4.border-bottom
+    h3 Linked Accounts
+  .form-group
+    .offset-sm-3.col-md-7.pl-2
+      if user.discord
+        p.mb-1: a.text-danger(href='/account/unlink/discord') Unlink your Discord account
+      else
+        p.mb-1: a(href='/auth/discord') Link your Discord account
+    .offset-sm-3.col-md-7.pl-2
+      if user.facebook
+        p.mb-1: a.text-danger(href='/account/unlink/facebook') Unlink your Facebook account
+      else
+        p.mb-1: a(href='/auth/facebook') Link your Facebook account
+    .offset-sm-3.col-md-7.pl-2
+      if user.github
+        p.mb-1: a.text-danger(href='/account/unlink/github') Unlink your GitHub account
+      else
+        p.mb-1: a(href='/auth/github') Link your GitHub account
+    .offset-sm-3.col-md-7.pl-2
+      if user.google
+        p.mb-1: a.text-danger(href='/account/unlink/google') Unlink your Google account
+      else
+        p.mb-1: a(href='/auth/google') Link your Google account
+    .offset-sm-3.col-md-7.pl-2
+      if user.linkedin
+        p.mb-1: a.text-danger(href='/account/unlink/linkedin') Unlink your LinkedIn account
+      else
+        p.mb-1: a(href='/auth/linkedin') Link your LinkedIn account
+    .offset-sm-3.col-md-7.pl-2
+      if user.quickbooks
+        p.mb-1: a.text-danger(href='/account/unlink/quickbooks') Unlink your QuickBooks account
+      else
+        p.mb-1: a(href='/auth/quickbooks') Link your QuickBooks account
+    .offset-sm-3.col-md-7.pl-2
+      if user.steam
+        p.mb-1: a.text-danger(href='/account/unlink/steam') Unlink your Steam account
+      else
+        p.mb-1: a(href='/auth/steam') Link your Steam account
+    .offset-sm-3.col-md-7.pl-2
+      if user.trakt
+        p.mb-1: a.text-danger(href='/account/unlink/trakt') Unlink your Trakt account
+      else
+        p.mb-1: a(href='/auth/trakt') Link your Trakt account
+    .offset-sm-3.col-md-7.pl-2
+      if user.tumblr
+        p.mb-1: a.text-danger(href='/account/unlink/tumblr') Unlink your Tumblr account
+      else
+        p.mb-1: a(href='/auth/tumblr') Link your Tumblr account
+    .offset-sm-3.col-md-7.pl-2
+      if user.twitch
+        p.mb-1: a.text-danger(href='/account/unlink/twitch') Unlink your Twitch account
+      else
+        p.mb-1: a(href='/auth/twitch') Link your Twitch account
+    .offset-sm-3.col-md-7.pl-2
+      if user.x
+        p.mb-1: a.text-danger(href='/account/unlink/x') Unlink your X account
+      else
+        p.mb-1: a(href='/auth/x') Link your X account
+
+  style.
+    .route-link-row {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .route-link-row .route-url-input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .route-action-btn {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 16px;
+      border: 1.5px solid #dcdcdc;
+      border-radius: 10px;
+      background: #fff;
+      color: #444;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: border-color 0.25s ease, color 0.25s ease, background 0.25s ease;
+    }
+
+    .route-action-btn:hover {
+      border-color: #5bc0de;
+      color: #2f8fb3;
+      background: #f4fbfd;
+      text-decoration: none;
+    }
+
+    .route-action-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      color: inherit;
+    }
+
+    .route-action-label {
+      line-height: 1;
+    }
+
+    /* ── Ripple effect: a circle grows from the click point, turns the
+       button blue while active, then fades back to white ── */
+    .route-action-ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: #5bc0de;
+      opacity: 0.55;
+      transform: scale(0);
+      pointer-events: none;
+      animation: routeActionRippleAnim 0.6s ease-out forwards;
+    }
+
+    @keyframes routeActionRippleAnim {
+      to {
+        transform: scale(1);
+        opacity: 0;
+      }
+    }
+
+    /* Brief full-button blue flash while the ripple is active, fading back
+       to white — layered via a pseudo-element so it doesn't fight with the
+       hover background transition above. */
+    .route-action-btn.route-action-flash {
+      background: #5bc0de;
+      border-color: #5bc0de;
+      color: #fff;
+      transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+    }
+
+    @media (max-width: 480px) {
+      .route-action-label { display: none; }
+      .route-action-btn { padding: 0 12px; }
+    }
+
+  script.
+    document.addEventListener('DOMContentLoaded', function () {
+      // ── Water-drop ripple + blue flash for Copy/Open buttons ─────────────
+      function attachRipple(btn) {
+        btn.addEventListener('click', function (e) {
+          const rect = btn.getBoundingClientRect();
+          const ripple = document.createElement('span');
+          const size = Math.max(rect.width, rect.height) * 1.6;
+
+          ripple.className = 'route-action-ripple';
+          ripple.style.width = size + 'px';
+          ripple.style.height = size + 'px';
+          ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+          ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+
+          btn.appendChild(ripple);
+          btn.classList.add('route-action-flash');
+
+          setTimeout(function () {
+            ripple.remove();
+          }, 600);
+
+          setTimeout(function () {
+            btn.classList.remove('route-action-flash');
+          }, 350);
+        });
+      }
+
+      document.querySelectorAll('.route-action-btn').forEach(attachRipple);
+
+      // ── Copy route link buttons ─────────────────────────────────────────
+      document.querySelectorAll('.copy-route-btn').forEach(function (btn) {
+        btn.addEventListener('click', async function () {
+          const url = btn.dataset.routeUrl;
+          const card = btn.closest('.card');
+          const statusMsg = card ? card.querySelector('.copy-status-msg') : null;
+
+          try {
+            await navigator.clipboard.writeText(url);
+            if (statusMsg) {
+              statusMsg.textContent = '\u2713 Copied to clipboard!';
+              statusMsg.className = 'text-muted copy-status-msg text-success fw-semibold';
+            }
+          } catch (err) {
+            try {
+              const tempInput = document.createElement('input');
+              tempInput.value = url;
+              document.body.appendChild(tempInput);
+              tempInput.select();
+              document.execCommand('copy');
+              document.body.removeChild(tempInput);
+              if (statusMsg) {
+                statusMsg.textContent = '\u2713 Copied to clipboard!';
+                statusMsg.className = 'text-muted copy-status-msg text-success fw-semibold';
+              }
+            } catch (fallbackErr) {
+              if (statusMsg) {
+                statusMsg.textContent = '\u2717 Could not copy — please copy manually.';
+                statusMsg.className = 'text-muted copy-status-msg text-danger';
+              }
+            }
+          }
+
+          if (statusMsg) {
+            setTimeout(function () {
+              statusMsg.textContent = '';
+              statusMsg.className = 'text-muted copy-status-msg';
+            }, 3000);
+          }
+        });
+      });
+
+      // ── Existing Save Settings logic ─────────────────────────────────────
+      document.querySelectorAll('.save-qr-btn').forEach(function (btn) {
+        btn.addEventListener('click', async function (e) {
+          const card = e.target.closest('.card');
+          const statusMsg = card.querySelector('.status-msg');
+
+          const route                  = e.target.dataset.route;
+          const destination_url        = card.querySelector('[name="destination_url"]').value;
+          const page_title             = card.querySelector('[name="page_title"]').value;
+          const display_message        = card.querySelector('[name="display_message"]').value;
+          const redirect_delay_seconds = card.querySelector('[name="redirect_delay_seconds"]').value;
+
+          const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+          const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+          statusMsg.textContent = 'Saving\u2026';
+          statusMsg.className = 'ms-2 status-msg text-muted';
+
+          try {
+            const res = await fetch('/dashboard/update-destination', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken,
+              },
+              body: JSON.stringify({
+                route,
+                destination_url,
+                page_title,
+                display_message,
+                redirect_delay_seconds,
+              }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+              statusMsg.textContent = '\u2713 Saved!';
+              statusMsg.className = 'ms-2 status-msg text-success fw-semibold';
+            } else {
+              statusMsg.textContent = '\u2717 Error: ' + (data.error || 'Unknown error');
+              statusMsg.className = 'ms-2 status-msg text-danger';
+            }
+          } catch (err) {
+            statusMsg.textContent = '\u2717 Network error';
+            statusMsg.className = 'ms-2 status-msg text-danger';
+          }
+
+          setTimeout(function () {
+            statusMsg.textContent = '';
+            statusMsg.className = 'ms-2 status-msg';
+          }, 4000);
+        });
+      });
+    });

@@ -1,0 +1,196 @@
+
+I didnt know if you already saw my file for models/ProcessedOrder.js this is my original
+
+/**
+
+ * models/ProcessedOrder.js
+
+ * Idempotency guard — records every Stripe session_id that has already been
+
+ * counted toward sold units and triggered an order confirmation email.
+
+ *
+
+ * Collection: "processed_orders" (MongoDB Atlas, Cluster login1, DB: test)
+
+ *
+
+ * Flow:
+
+ *   1. /api/verify-session receives a session_id.
+
+ *   2. Checks this collection — if document exists, skip all writes.
+
+ *   3. If not found: insert here first, then increment sold counts and send email.
+
+ *
+
+ * The TTL index removes records automatically after 90 days, keeping the
+
+ * collection lean without any manual cleanup.
+
+ */
+
+
+
+import mongoose from 'mongoose';
+
+
+
+const ProcessedOrderSchema = new mongoose.Schema(
+
+  {
+
+    session_id:  { type: String, required: true, unique: true },
+
+    processedAt: { type: Date,   default: Date.now },
+
+  },
+
+  {
+
+    collection: 'processed_orders',
+
+    timestamps: false,
+
+  }
+
+);
+
+
+
+// Auto-delete after 90 days — prevents unbounded collection growth
+
+ProcessedOrderSchema.index({ processedAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 90 });
+
+
+
+const ProcessedOrder = mongoose.models.ProcessedOrder || mongoose.model('ProcessedOrder', ProcessedOrderSchema);
+
+
+
+export default ProcessedOrder;
+
+
+
+
+
+This is the file you gave me to use instead:
+
+
+
+import mongoose from 'mongoose';
+
+
+
+const processedOrderSchema = new mongoose.Schema({
+
+  session_id:   { type: String, required: true, unique: true, index: true },
+
+  // NEW: lets a repeat call to /api/verify-session (e.g. page refresh) return
+
+  // the correct "this was cancelled" status instead of silently reporting
+
+  // "paid" just because the idempotency guard already saw this session_id.
+
+  cancelled:    { type: Boolean, default: false },
+
+  cancelReason: { type: String, default: null },
+
+}, { timestamps: true });
+
+
+
+const ProcessedOrder = mongoose.models.ProcessedOrder
+
+  || mongoose.model('ProcessedOrder', processedOrderSchema, 'processedorders');
+
+
+
+export default ProcessedOrder; 
+
+
+
+
+I asked gemini for help and it told me to use this file for models/ProcessedOrder.js, this is what im using currently. Make any additonal edits if needed to make it work:
+
+
+
+
+/**
+ * models/ProcessedOrder.js
+ * Idempotency guard — records every Stripe session_id that has already been
+ * counted toward sold units and triggered an order confirmation email.
+ */
+
+import mongoose from 'mongoose';
+
+const ProcessedOrderSchema = new mongoose.Schema(
+  {
+    session_id:   { type: String, required: true, unique: true },
+    processedAt:  { type: Date,   default: Date.now },
+    
+    // NEW: Lets a repeat call to /api/verify-session return the correct 
+    // "this was cancelled" status instead of silently reporting "paid".
+    cancelled:    { type: Boolean, default: false },
+    cancelReason: { type: String, default: null },
+  },
+  {
+    collection: 'processed_orders', // Kept your original database collection
+    timestamps: true, // Added timestamps in case Claude's code needs them
+  }
+);
+
+// Auto-delete after 90 days — prevents unbounded collection growth
+ProcessedOrderSchema.index({ processedAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 90 });
+
+const ProcessedOrder = mongoose.models.ProcessedOrder || mongoose.model('ProcessedOrder', ProcessedOrderSchema);
+
+export default ProcessedOrder;
+
+
+
+
+
+When i use an email in stripe checkout thats not in the table, it gives me this screen after stripe checkout. 
+✕
+Payment Declined
+Something went wrong processing your payment. No charge was made. Please try again or use a different card.
+
+Try Again
+
+
+
+
+
+This is the url it sent me to
+http://localhost:8080/shop/status?status=success&session_id=cs_test_a10Olw8L8IjKTDVrIwJFgZVym5UXNiBaCwxrRRDfzrFiHOnVGJ75CIbJ3R
+
+
+Also if i go to cluster login, database test, table processed_orders  Theres a json file that says this
+
+{
+  "_id": {
+    "$oid": "6a56d5daa0fd4ebbbb91973c"
+  },
+  "session_id": "cs_test_a10Olw8L8IjKTDVrIwJFgZVym5UXNiBaCwxrRRDfzrFiHOnVGJ75CIbJ3R",
+  "cancelled": true,
+  "cancelReason": "checkout_email_not_registered",
+  "processedAt": {
+    "$date": "2026-07-15T00:35:38.679Z"
+  },
+  "createdAt": {
+    "$date": "2026-07-15T00:35:38.682Z"
+  },
+  "updatedAt": {
+    "$date": "2026-07-15T00:35:39.617Z"
+  },
+  "__v": 0
+}
+
+
+
+Can you tell me if the order got canceled correctly. I also saw that it sends an automated email to the user if you dont use an existing email. That looks great! I wouldnt want the person to get charged when they dont have an account. Only for this specific product listing. Also it does work and have a success page with order details after successful order using an already existing email. Im also using a test api key. 
+
+
+I need some help with the navigation in my store. When im in my store with product listings at route localhost:8080/shop/collections At the top header, there is "▲ HYDRO SWEEP SERVICES LLC. STORE" If you click it, you already go to the route /shop         Instead, when you click it, have a smooth drop down menu. Have the top option, "Store" if you click it you go to route /shop . Then below have "Home" direct to my base url. Im testing in localhost:8080 but i want this working in production. I might already have an index file. For the third option down have Account that goes to route /account Only signed in users can enter route /account To the left of Account, have a small circular default profile picture. Also, i already have a redirect to /login if you try to visit /account not logged in. For the 4th and 5th option down have Login and Sign up. The routes are /login and /signup For all options, have hover effect and boxes around each option. Once the dropdown is open, a user can click off of it and it will automatically close up. Also have a light grey border outline around "▲ HYDRO SWEEP SERVICES LLC. STORE"  with rounded edges, that's so you can tell its a button. When the dropdown is open, change the border color of the button. Also have a professional animation with the border of button when button is clicked. Have an animation where the border color is changing clock wise when clicked, then counter clock wise when closing dropdown. Also optimize the dropdown for mobile devices.  Give full code for all files

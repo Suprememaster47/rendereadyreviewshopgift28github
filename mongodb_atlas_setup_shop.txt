@@ -1,0 +1,81 @@
+In Mongodb Atlas, go to Data Explorer. These json files are for the routes/url's of your ecom website.
+Here is list of 4 json that go in table "products" and 1 mapping file that goes in table "mapping". 
+This is the database structure. create the tables "products" and "mapping" Format below:
+Changing the table mapping might not be required. Use the file for mapping if need 
+Cluster login1, Database test, Table products
+Cluster login1, Database test, Table mapping
+
+
+These 4 individual json files go in table products:
+{
+  "title": "Acme Circles T-Shirt",
+  "slug": "acme-circles-t-shirt",
+  "priceUSD": 20.00,
+  "sizes": ["S", "M", "L"],
+  "colors": ["Black", "White"],
+  "images": [
+    "/public/assets/images/tshirt-front.png",
+    "/public/assets/images/tshirt-back.png",
+    "/public/assets/images/tshirt-detail.png",
+    "/public/assets/images/tshirt-lifestyle.png"
+  ],
+  "inStock": true,
+  "category": "Shirts"
+}
+
+
+{
+  "title": "Acme Storm Hoodie",
+  "slug": "acme-storm-hoodie",
+  "priceUSD": 50.00,
+  "sizes": ["S", "M", "L"],
+  "colors": ["Grey"],
+  "images": [
+    "/public/assets/images/hoodie-main.png"
+  ],
+  "inStock": true,
+  "category": "Hoodies"
+}
+
+
+{
+  "title": "Lightning Cap",
+  "slug": "lightning-cap",
+  "priceUSD": 25.00,
+  "sizes": ["S", "M", "L"],
+  "colors": ["Black", "White"],
+  "images": [
+    "/public/assets/images/cap-front.png",
+    "/public/assets/images/cap-side.png"
+  ],
+  "inStock": true,
+  "category": "Hats"
+}
+
+
+{
+  "title": "Acme Minimalist Mug",
+  "slug": "acme-minimalist-mug",
+  "priceUSD": 15.00,
+  "sizes": ["S", "M", "L"],
+  "colors": ["White", "Black"],
+  "images": [
+    "/public/assets/images/mug-main.png",
+    "/public/assets/images/mug-top.png",
+    "/public/assets/images/mug-lifestyle.png"
+  ],
+  "inStock": true,
+  "category": "Mugs"
+}
+
+2. The Routing Mapping File 
+This file maps the full URL path directly to the product title, allowing your server to quickly identify which product belongs to which route.
+This 1 individual json file goes in table mapping:
+
+
+{
+  "/shop/collections/acme-circles-t-shirt": "Acme Circles T-Shirt",
+  "/shop/collections/acme-storm-hoodie": "Acme Storm Hoodie",
+  "/shop/collections/lightning-cap": "Lightning Cap",
+  "/shop/collections/acme-minimalist-mug": "Acme Minimalist Mug"
+}

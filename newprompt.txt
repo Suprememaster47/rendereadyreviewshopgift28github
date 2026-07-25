@@ -1,0 +1,30 @@
+Those changes you gave me worked beatifully. Here are the new features i need added to my project
+When you remove item from CART, it automatically closes tab. Make it so it just removes the item, it doesnt close the tab automatically. When i open CART tab, it says "Bag" at the top, rename to Cart
+On mobile, the CART tab extends too far to the left. On mobile, make it so the tab comes out 2/3 of the screen to the left. A person can easily click off of it like from before. On PC, the tab is already perfect and comes out the way i want, keep that the same. Fix for mobile
+In the shop, if you click checkout then click back in browser, then go back to thewebsite, the checkout button just says "REDIRECTING...". I cant click it and I have to refresh the page. I dont know if this is a security feature, if its not, make it so it works.
+
+When a user logs into their account and get directed to /account make it so the assigned user can easily copy Assigned Route (Locked) link. Also have the option to open in a new tab. Then it opens the assigned route in new tab
+When I share a direct link to my shop with /shop or /shop/collections it says "ACME STORE" Change it to "Sign Shop"
+Use the favicon icon located in public/favicon.ico for the entire shop. Its just the shop that needs it.
+Give code for all files that need fixing. Let me know if you need any files so i can provide them. Also give file names so i know which file needs replacing
+
+{
+  "_id": {
+    "$oid": "6a471b17589a052aac593943"
+  },
+  "route": "review-Vb3nZ5",
+  "product_type": "SquareAcrylicSign",
+  "company_name": "QR Code Sign",
+  "hardcoded_url": "https://hydrosweepservices.com/review-Vb3nZ5",
+  "destination_url": "https://google.com",
+  "redirect_delay_seconds": 5,
+  "display_message": "Thanks for scanning! Auto Redirecting to Google review...",
+  "page_title": "We appreciate your feedback!",
+  "active": true,
+  "ownerId": {
+    "$oid": "6a568f4a9366f149ab1ba99c"
+  },
+  "canEdit": true,
+  "__v": 0,
+  "assignmentOrder": 1
+}

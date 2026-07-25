@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Shop</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/shop-style.css">
+    <script>
+        (function () {
+            if (window.location.pathname !== '/shop') {
+                document.documentElement.style.setProperty('--intro-display', 'none');
+            }
+        }());
+    </script>
+    <style>
+        #intro-view { display: var(--intro-display, flex); }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.clouds.min.js"></script>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <!-- ── Intro Screen (/shop) ────────────────────────────────────────── -->
+    <div id="intro-view">
+        <div class="intro-logo">Welcome</div>
+        <button class="intro-btn" onclick="enterShop()">Shop Now</button>
+        <button class="intro-btn">Archives</button>
+    </div>
+
+    <!-- ── Shop View (/shop/collections and /shop/collections/:slug) ─── -->
+    <div id="shop-view" class="acme-hidden" style="opacity:0; transition: opacity 0.5s;">
+        <nav class="acme-nav">
+            <div class="acme-nav-inner">
+
+                <div class="nav-logo-wrapper">
+                    <button
+                        id="nav-logo-btn"
+                        class="acme-logo-btn"
+                        onclick="toggleNavDropdown()"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                    >
+                        <span class="acme-logo-text">▲ HYDRO SWEEP SERVICES LLC. STORE</span>
+                    </button>
+
+                    <div id="nav-dropdown" class="nav-dropdown acme-hidden" role="menu">
+                        <a href="/shop" class="nav-dropdown-item" role="menuitem" onclick="return navigateToStore(event)">
+                            <span class="nav-item-icon">🏬</span>
+                            <span>Store</span>
+                        </a>
+                        <a href="/" class="nav-dropdown-item" role="menuitem">
+                            <span class="nav-item-icon">🏠</span>
+                            <span>Home</span>
+                        </a>
+                        <a href="/account" class="nav-dropdown-item nav-account-item" role="menuitem">
+                            <img id="nav-profile-pic" class="nav-profile-pic" src="https://www.gravatar.com/avatar/?d=mp&s=64" alt="">
+                            <span>Account</span>
+                        </a>
+                        <a href="/login" class="nav-dropdown-item" role="menuitem">
+                            <span class="nav-item-icon">🔑</span>
+                            <span>Login</span>
+                        </a>
+                        <a href="/signup" class="nav-dropdown-item" role="menuitem">
+                            <span class="nav-item-icon">📝</span>
+                            <span>Sign Up</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="search-wrapper">
+                    <input
+                        type="text"
+                        id="acme-search-bar"
+                        class="acme-search-input"
+                        placeholder="Search..."
+                        autocomplete="off"
+                        maxlength="100"
+                    >
+                    <div id="search-dropdown" class="search-results-dropdown acme-hidden"></div>
+                </div>
+
+                <div onclick="toggleCart(true)" class="cart-label">CART&nbsp;[<span id="cart-count">0</span>]</div>
+            </div>
+        </nav>
+
+        <!-- ── Sale Countdown Banner ────────────────────────────────────── -->
+        <div class="sale-timer-banner" id="sale-timer-banner">
+            <div class="sale-timer-flash-layer" id="sale-timer-flash-layer"></div>
+            <div class="sale-timer-inner">
+                <span class="sale-timer-label">SALE ENDS IN</span>
+                <div class="sale-timer-units">
+                    <div class="sale-timer-box">
+                        <span class="sale-timer-num" id="timer-hrs">04</span>
+                        <span class="sale-timer-unit-label">HRS</span>
+                    </div>
+                    <span class="sale-timer-colon">:</span>
+                    <div class="sale-timer-box">
+                        <span class="sale-timer-num" id="timer-min">00</span>
+                        <span class="sale-timer-unit-label">MIN</span>
+                    </div>
+                    <span class="sale-timer-colon">:</span>
+                    <div class="sale-timer-box">
+                        <span class="sale-timer-num" id="timer-sec">00</span>
+                        <span class="sale-timer-unit-label">SEC</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Header Marquee Stripe ────────────────────────────────────── -->
+        <div class="header-marquee">
+            <div class="header-marquee-track" id="header-marquee-track"></div>
+        </div>
+
+        <main id="shop-main-content" style="max-width:1200px; margin: auto; padding: 0 15px;">
+
+            <!-- Collections grid -->
+            <div id="shop-home">
+                <div class="filter-header">
+                    <div class="filter-group"><h4>Collections</h4><ul id="cat-filters"></ul></div>
+                    <div class="filter-group"><h4>Sort By</h4><ul id="sort-filters"></ul></div>
+                </div>
+                <div class="acme-landing-grid" id="search-grid"></div>
+            </div>
+
+            <!-- Product Detail Page -->
+            <div id="pdp-view" class="acme-hidden">
+                <div class="acme-pdp-main">
+                    <div class="acme-gallery">
+                        <div class="acme-main-frame"><img id="pdp-img" src="" alt="Product image"></div>
+                        <div id="pdp-thumbs" class="acme-thumbs"></div>
+                    </div>
+                    <div class="acme-details">
+                        <h1 id="pdp-title"></h1>
+                        <div id="pdp-price" class="price-pill"></div>
+                        <div id="variant-area"></div>
+
+                        <div id="tier-pricing-area" class="tier-pricing-area"></div>
+
+                        <button onclick="addToCart()" class="add-btn" id="pdp-add-btn">ADD TO CART</button>
+
+                        <span
+                            id="pdp-sold-count"
+                            style="display:none; text-align:center; font-size:0.68rem;
+                                   color:#555; font-weight:600; letter-spacing:0.5px;
+                                   margin-top:8px;"
+                        ></span>
+
+                        <span
+                            id="pdp-remaining"
+                            style="display:none; text-align:center; font-size:0.72rem;
+                                   font-weight:700; letter-spacing:0.5px; margin-top:6px;"
+                        ></span>
+
+                        <span onclick="closePDP()" class="back-link">← BACK TO COLLECTION</span>
+                    </div>
+                </div>
+                <div class="related-section-title">Related Products</div>
+                <div class="marquee-container">
+                    <div id="related-marquee" class="marquee-track"></div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- ── Footer: legal + support links ────────────────────────────── -->
+        <footer class="acme-footer" id="site-footer">
+            <div class="acme-footer-inner">
+                <span class="acme-footer-copy">© 2026 Hydro Sweep Services LLC</span>
+                <div class="acme-footer-links">
+                    <a href="/privacy-policy" class="acme-footer-link">Privacy Policy</a>
+                    <a href="/account" class="acme-footer-link">Track Your Order</a>
+                    <a href="/contact.html" class="acme-footer-link">Contact Us</a>
+                    <a href="/shipping-policy" class="acme-footer-link">Shipping Policy</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ── Cart Drawer ───────────────────────────────────────────────────── -->
+    <div id="cart-drawer" class="cart-drawer">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0;">Cart</h2>
+            <span onclick="toggleCart(false)" style="cursor:pointer; font-size:1.2rem;">✕</span>
+        </div>
+        <div id="cart-items" style="flex:1; overflow-y:auto; margin:20px 0; padding-top:10px;"></div>
+        <div style="border-top:1px solid #eee; padding-top:20px;">
+            <div style="display:flex; justify-content:space-between; font-weight:900; margin-bottom:15px;">
+                <span>Total</span>
+                <span id="cart-total">$0.00</span>
+            </div>
+            <button
+                id="checkout-btn"
+                onclick="startCheckout()"
+                style="width:100%; background:#000; color:#fff; border:none; padding:15px;
+                       border-radius:30px; font-weight:900; cursor:pointer; font-size:0.9rem;
+                       text-transform:uppercase; transition:background 0.3s;"
+                onmouseover="this.style.background='#222'"
+                onmouseout="this.style.background='#000'"
+            >CHECKOUT</button>
+        </div>
+    </div>
+
+    <script src="/shop-script.js"></script>
+</body>
+</html>

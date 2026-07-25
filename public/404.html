@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 - Page Not Found</title>
+
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="assets/css/animate.css" />
+    <link rel="stylesheet" href="assets/css/lineicons.css" />
+    <link rel="stylesheet" href="assets/css/ud-styles.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.clouds.min.js"></script>
+
+    <style>
+        /* Merged Custom Styles */
+        .vanta-section {
+            position: relative;
+            width: 100%;
+            height: 70vh; /* Adjust height as needed */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .notfound-card {
+            position: relative;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px);
+            border: 1px solid #333;
+            border-radius: 20px;
+            padding: 50px 40px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .notfound-code {
+            color: #fff;
+            font-size: 5rem;
+            font-weight: 900;
+            letter-spacing: -4px;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .notfound-msg {
+            color: #ccc;
+            font-size: 1rem;
+            margin: 16px 0 30px;
+            line-height: 1.6;
+        }
+
+        .notfound-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 30px;
+            font-weight: 900;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-decoration: none !important;
+            display: inline-block;
+            transition: 0.3s;
+        }
+
+        .notfound-btn:hover {
+            background: #4a6cf7; /* Matches UIdeck primary blue */
+            color: #fff;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <header class="ud-header">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <nav class="navbar navbar-expand-lg">
+                        <a class="navbar-brand" href="index.html">
+                            <img src="assets/images/logo/logo.svg" alt="Logo" />
+                        </a>
+                        <div class="navbar-collapse">
+                            <ul id="nav" class="navbar-nav mx-auto">
+                                <li class="nav-item"><a href="index.html">Home</a></li>
+                                <li class="nav-item"><a href="/shop">Shop</a></li>
+                                <li class="nav-item"><a href="index.html#contact">Contact</a></li>
+                            </ul>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="vanta-section">
+        <div id="canvas-container"></div>
+        <div class="notfound-card">
+            <p class="notfound-code">404</p>
+            <p class="notfound-msg">
+                This page doesn't exist or has moved. 
+                Head back to the store to find what you're looking for.
+            </p>
+            <a href="/shop" class="notfound-btn">Back to Store</a>
+        </div>
+    </section>
+
+    <footer class="ud-footer wow fadeInUp" data-wow-delay=".15s">
+        <div class="ud-footer-widgets">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xl-3 col-lg-4 col-md-6">
+                        <div class="ud-widget">
+                            <a href="index.html" class="ud-footer-logo">
+                                <img src="assets/images/logo/logo.svg" alt="logo" />
+                            </a>
+                            <p class="ud-widget-desc">Professional exterior cleaning and maintenance services.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ud-footer-bottom">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-8">
+                        <p class="ud-footer-bottom-right">© 2026 Your Company. All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/wow.min.js"></script>
+    <script src="assets/js/main.js"></script>
+
+    <script>
+        VANTA.CLOUDS({
+            el: "#canvas-container",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            backgroundColor: 0x0,
+            skyColor: 0x111b24,
+            cloudColor: 0x3a4a5e,
+            speed: 0.8
+        });
+    </script>
+</body>
+</html>

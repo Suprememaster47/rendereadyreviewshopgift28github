@@ -1,0 +1,20 @@
+This is an example unassigned route. Make sure product_type matches just like in the products table json
+
+{
+  "_id": {
+    "$oid": "6a41f23c7b3941a5b892ef01"
+  },
+  "route": "review-willthiswork",
+  "product_type": "SquareAcrylicSign",
+  "company_name": "QR Code Sign",
+  "hardcoded_url": "https://hydrosweepservices.com/review-willthiswork",
+  "destination_url": "https://google.com",
+  "redirect_delay_seconds": 5,
+  "display_message": "Thanks for scanning. Auto redirecting to Google reviews…",
+  "page_title": "We appreciate your feedback!",
+  "active": true,
+  "ownerId": null,
+  "canEdit": true,
+  "__v": 0
+}
+

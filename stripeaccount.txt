@@ -1,0 +1,85 @@
+You are an expert full-stack developer working with a Node.js app based on the sahat/hackathon-starter boilerplate. The app uses Express, MongoDB (Mongoose), Passport.js for authentication, Pug templates (for account/auth pages), static HTML/JS/CSS (for the shop frontend), Stripe for payments, and Nodemailer for order emails.
+
+I need you to help me implement several new features and fix some existing UI issues. Below is a complete description of the requirements.
+
+Project Structure
+Here is the current structure of the shop functionality within the project:
+
+your-project/
+├── server.js
+├── db.js        
+├── package.json           
+├── .env                  
+├── models/
+│   ├── Product.js
+│   ├── QRcoderedirect1.js       
+│   └── User.js        
+└── public/
+    ├── shop.html
+    ├── shop-script.js
+    ├── shop-style.css     
+    ├── shop-status.html     
+    └── 404.html
+
+Database & Context Setup
+MongoDB Connection: Connected via process.env.MONGODB_URI. Atlas cluster name: login1, database: test.
+
+Users Collection: The users collection is handled by models/User.js. Do not query this collection for reviews or gifting.
+
+Product Collection: The collection is named products.
+
+Example Product JSON:
+
+{
+  "_id": { "$oid": "6a41f151589a052aac591111" },
+  "name": "Square Acrylic Sign",
+  "slug": "square-acrylic-sign",
+  "price": 2500,
+  "product_type": "SquareAcrylicSign",
+  "quantityRemaining": 50,
+  "totalSold": 12
+}
+
+Routes Collection: The pool of available routes is stored in QRcoderedirect1.
+
+Example Route JSON (Unassigned):
+
+{
+  "_id": { "$oid": "6a41f151589a052aac5935dc" },
+  "route": "review-Hj5nB6",
+  "product_type": "SquareAcrylicSign",
+  "company_name": "QR Code Sign",
+  "hardcoded_url": "https://hydrosweepservices.com/review-Hj5nB6",
+  "destination_url": "https://google.com",
+  "redirect_delay_seconds": 5,
+  "display_message": "Thanks for scanning. Auto redirecting to Google reviews…",
+  "page_title": "We appreciate your feedback!",
+  "active": true,
+  "ownerId": null,
+  "canEdit": true,
+  "__v": 0
+}
+
+
+After its assigned it should look like this:
+
+{
+      "_id": { "$oid": "6a41f151589a052aac5935dc" },
+      "route": "review-Hj5nB6",
+      "product_type": "SquareAcrylicSign",
+      "company_name": "QR Code Sign",
+      "hardcoded_url": "https://hydrosweepservices.com/review-Hj5nB6",
+      "destination_url": "https://google.com",
+      "redirect_delay_seconds": 5,
+      "display_message": "Thanks for scanning. Auto redirecting to Google reviews…",
+      "page_title": "We appreciate your feedback!",
+      "active": true,
+      "ownerId": { "$oid": "690bcb55304a2e8ee999b7da" }, 
+      "canEdit": true,
+      "__v": 0
+    }
+
+
+
+After a successful Stripe checkout, the webhook reads the customer's email, as well as the product_type and quantity from the Stripe session metadata.
+

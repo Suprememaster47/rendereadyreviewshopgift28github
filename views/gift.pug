@@ -1,0 +1,411 @@
+extends layout
+
+block content
+  .gift-page
+    h2 Gift a Route
+    p.gift-sub Send one of your QR code routes to another registered user.
+
+    if myRoutes && myRoutes.length
+      .gift-search-card
+        .mb-3
+          label.form-label(for='route-select') Which route do you want to gift?
+          select#route-select.form-control
+            each r in myRoutes
+              option(value=r.route)= (r.company_name || 'QR Route') + ' — ' + r.route
+
+        .search-wrapper
+          label.form-label(for='gift-email-input') Recipient's Email
+          .gift-input-row
+            input#gift-email-input.gift-search-input(
+              type='text'
+              placeholder='Email'
+              autocomplete='off'
+            )
+            button#gift-search-btn.gift-search-btn(type='button')
+              span.btn-label Search
+              span.btn-spinner
+
+        #gift-search-message.gift-message
+        #gift-result-area
+
+    else
+      .gift-empty
+        p You don't own any routes yet, so there's nothing to gift. Once a QR route is assigned to your account, it'll show up here — check your #[a(href='/account') account page].
+
+    // ── Morph popup ──────────────────────────────────────────────────────
+    #gift-popup-overlay.gift-popup-overlay
+      #gift-popup.gift-popup
+        span#gift-popup-close.gift-popup-close ✕
+        img#gift-popup-avatar.gift-popup-avatar(
+          src='https://www.gravatar.com/avatar/?d=mp&s=200'
+          alt='Profile'
+        )
+        h3#gift-popup-name User
+        p#gift-popup-email.gift-popup-email
+        .gift-popup-route-info
+          label.form-label Gifting route:
+          .gift-popup-route-label#gift-popup-route-label
+        #gift-popup-status.gift-popup-status
+        button#gift-popup-confirm-btn.gift-confirm-btn Gift This Route
+
+  style.
+    .gift-page {
+      max-width: 640px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .gift-sub { color: #777; margin-bottom: 24px; }
+
+    .gift-search-card {
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+
+    .gift-input-row { display: flex; gap: 10px; align-items: stretch; }
+
+    .gift-search-input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.95rem;
+      transition: border-color 0.3s ease;
+    }
+    .gift-search-input:focus { border-color: #5bc0de; }
+    .gift-search-input::placeholder { transition: opacity 0.3s ease; }
+    .gift-search-input:focus::placeholder { opacity: 0; }
+
+    .gift-search-btn {
+      position: relative;
+      background: #337ab7;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.25s ease;
+      min-width: 100px;
+    }
+    .gift-search-btn:hover:not(:disabled) { background: #285e8e; }
+    .gift-search-btn:disabled { cursor: not-allowed; opacity: 0.85; }
+
+    .btn-spinner {
+      display: none;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      margin: 0 auto;
+      animation: giftSpin 0.7s linear infinite;
+    }
+    .gift-search-btn.loading .btn-label { display: none; }
+    .gift-search-btn.loading .btn-spinner { display: block; }
+    @keyframes giftSpin { to { transform: rotate(360deg); } }
+
+    .gift-message {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      min-height: 1.2em;
+    }
+    .gift-message.error { color: #c0392b; }
+    .gift-message.info { color: #888; }
+
+    #gift-result-area { margin-top: 16px; }
+
+    .gift-profile-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: box-shadow 0.25s ease, transform 0.25s ease;
+      background: #fff;
+    }
+    .gift-profile-card:hover {
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+    .gift-profile-card img {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .gift-profile-card .name { font-weight: 700; font-size: 0.9rem; }
+    .gift-profile-card .email { font-size: 0.78rem; color: #888; }
+
+    .gift-popup-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0);
+      pointer-events: none;
+      z-index: 3000;
+      transition: background 0.3s ease;
+    }
+    .gift-popup-overlay.active {
+      background: rgba(0,0,0,0.55);
+      pointer-events: auto;
+    }
+
+    .gift-popup {
+      position: fixed;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      padding: 30px;
+      box-sizing: border-box;
+      text-align: center;
+      overflow: hidden;
+      opacity: 0;
+    }
+
+    .gift-popup-close {
+      position: absolute; top: 12px; right: 16px;
+      cursor: pointer; font-size: 1rem; color: #999;
+    }
+    .gift-popup-close:hover { color: #333; }
+
+    .gift-popup-avatar {
+      width: 84px; height: 84px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 10px auto 14px;
+      display: block;
+    }
+    .gift-popup h3 { margin: 0 0 4px; font-size: 1.1rem; }
+    .gift-popup-email { color: #888; font-size: 0.85rem; margin-bottom: 18px; }
+
+    .gift-popup-route-info {
+      background: #f7f7f7;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 18px;
+      text-align: left;
+    }
+    .gift-popup-route-info .form-label {
+      font-size: 0.7rem; text-transform: uppercase;
+      color: #999; margin-bottom: 4px; display: block;
+    }
+    .gift-popup-route-label { font-weight: 700; font-size: 0.9rem; }
+
+    .gift-popup-status {
+      min-height: 1.3em;
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+    }
+    .gift-popup-status.error { color: #c0392b; }
+    .gift-popup-status.success { color: #2e7d32; }
+
+    .gift-confirm-btn {
+      width: 100%;
+      background: #337ab7;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.25s ease, opacity 0.2s ease;
+    }
+    .gift-confirm-btn:hover:not(:disabled) { background: #285e8e; }
+    .gift-confirm-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .gift-empty { color: #888; padding: 20px 0; }
+
+  script.
+    document.addEventListener('DOMContentLoaded', function () {
+      var searchInput   = document.getElementById('gift-email-input');
+      var searchBtn     = document.getElementById('gift-search-btn');
+      var messageEl     = document.getElementById('gift-search-message');
+      var resultArea    = document.getElementById('gift-result-area');
+      var routeSelect   = document.getElementById('route-select');
+
+      var overlay       = document.getElementById('gift-popup-overlay');
+      var popup         = document.getElementById('gift-popup');
+      var popupClose    = document.getElementById('gift-popup-close');
+      var popupAvatar   = document.getElementById('gift-popup-avatar');
+      var popupName     = document.getElementById('gift-popup-name');
+      var popupEmail    = document.getElementById('gift-popup-email');
+      var popupRouteLbl = document.getElementById('gift-popup-route-label');
+      var popupStatus   = document.getElementById('gift-popup-status');
+      var popupConfirm  = document.getElementById('gift-popup-confirm-btn');
+
+      if (!searchBtn) return; // no routes to gift — page shows empty state
+
+      var currentRecipientEmail = null;
+      var activeCardEl = null;
+
+      function setMessage(text, type) {
+        messageEl.textContent = text || '';
+        messageEl.className = 'gift-message' + (type ? ' ' + type : '');
+      }
+
+      function renderProfileCard(email, displayName) {
+        resultArea.innerHTML = '';
+        var card = document.createElement('div');
+        card.className = 'gift-profile-card';
+        card.innerHTML =
+          '<img src="https://www.gravatar.com/avatar/?d=mp&s=100" alt="Profile">' +
+          '<div>' +
+            '<div class="name">' + displayName + '</div>' +
+            '<div class="email"></div>' +
+          '</div>';
+        card.querySelector('.email').textContent = email;
+        card.addEventListener('click', function () {
+          openPopup(card, email, displayName);
+        });
+        resultArea.appendChild(card);
+      }
+
+      searchBtn.addEventListener('click', async function () {
+        var email = searchInput.value.trim();
+        setMessage('');
+        resultArea.innerHTML = '';
+
+        if (!email) {
+          setMessage('Please enter an email address.', 'error');
+          return;
+        }
+
+        searchBtn.disabled = true;
+        searchBtn.classList.add('loading');
+
+        try {
+          var res = await fetch('/gift/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email }),
+          });
+          var data = await res.json();
+
+          if (res.status === 429) {
+            setMessage(data.error || 'Too many searches — please wait a moment.', 'error');
+          } else if (!res.ok) {
+            setMessage(data.error || 'Search failed.', 'error');
+          } else if (!data.found) {
+            setMessage('No registered user found with that email.', 'info');
+          } else {
+            setMessage('');
+            renderProfileCard(data.email, data.displayName || 'User');
+          }
+        } catch (err) {
+          setMessage('Network error. Please try again.', 'error');
+        }
+
+        searchBtn.disabled = false;
+        searchBtn.classList.remove('loading');
+      });
+
+      searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          searchBtn.click();
+        }
+      });
+
+      // ── Morph card -> popup ────────────────────────────────────────────
+      function openPopup(cardEl, email, displayName) {
+        currentRecipientEmail = email;
+        activeCardEl = cardEl;
+
+        popupName.textContent = displayName;
+        popupEmail.textContent = email;
+        popupRouteLbl.textContent = routeSelect.options[routeSelect.selectedIndex]
+          ? routeSelect.options[routeSelect.selectedIndex].text
+          : '';
+        popupStatus.textContent = '';
+        popupStatus.className = 'gift-popup-status';
+        popupConfirm.disabled = false;
+        popupConfirm.textContent = 'Gift This Route';
+
+        var rect = cardEl.getBoundingClientRect();
+        overlay.classList.add('active');
+
+        popup.style.transition = 'none';
+        popup.style.top = rect.top + 'px';
+        popup.style.left = rect.left + 'px';
+        popup.style.width = rect.width + 'px';
+        popup.style.height = rect.height + 'px';
+        popup.style.opacity = '0';
+
+        requestAnimationFrame(function () {
+          popup.style.transition = 'top 0.4s cubic-bezier(0.22,1,0.36,1), left 0.4s cubic-bezier(0.22,1,0.36,1), width 0.4s cubic-bezier(0.22,1,0.36,1), height 0.4s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease';
+          var targetWidth = Math.min(380, window.innerWidth * 0.9);
+          var targetHeight = 420;
+          popup.style.top = ((window.innerHeight - targetHeight) / 2) + 'px';
+          popup.style.left = ((window.innerWidth - targetWidth) / 2) + 'px';
+          popup.style.width = targetWidth + 'px';
+          popup.style.height = targetHeight + 'px';
+          popup.style.opacity = '1';
+        });
+      }
+
+      function closePopup() {
+        if (!activeCardEl) {
+          overlay.classList.remove('active');
+          return;
+        }
+        var rect = activeCardEl.getBoundingClientRect();
+        popup.style.top = rect.top + 'px';
+        popup.style.left = rect.left + 'px';
+        popup.style.width = rect.width + 'px';
+        popup.style.height = rect.height + 'px';
+        popup.style.opacity = '0';
+
+        setTimeout(function () {
+          overlay.classList.remove('active');
+        }, 400);
+      }
+
+      popupClose.addEventListener('click', closePopup);
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) closePopup();
+      });
+
+      popupConfirm.addEventListener('click', async function () {
+        if (!currentRecipientEmail) return;
+        var route = routeSelect.value;
+
+        popupConfirm.disabled = true;
+        popupStatus.textContent = 'Sending\u2026';
+        popupStatus.className = 'gift-popup-status';
+
+        try {
+          var res = await fetch('/gift/transfer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ route: route, recipientEmail: currentRecipientEmail }),
+          });
+          var data = await res.json();
+
+          if (res.status === 429) {
+            popupStatus.textContent = data.error || 'Too many attempts — please wait.';
+            popupStatus.className = 'gift-popup-status error';
+            popupConfirm.disabled = false;
+          } else if (!res.ok || !data.success) {
+            popupStatus.textContent = data.error || 'Transfer failed.';
+            popupStatus.className = 'gift-popup-status error';
+            popupConfirm.disabled = false;
+          } else {
+            popupStatus.textContent = '\u2713 ' + data.message;
+            popupStatus.className = 'gift-popup-status success';
+            popupConfirm.textContent = 'Gifted!';
+
+            // Remove the gifted route from the dropdown so it can't be gifted twice
+            var opt = routeSelect.querySelector('option[value="' + route + '"]');
+            if (opt) opt.remove();
+
+            setTimeout(closePopup, 1400);
+          }
+        } catch (err) {
+          popupStatus.textContent = 'Network error. Please try again.';
+          popupStatus.className = 'gift-popup-status error';
+          popupConfirm.disabled = false;
+        }
+      });
+    });
